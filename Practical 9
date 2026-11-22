@@ -1,0 +1,100 @@
+
+# Blocks World using STRIPS Planning
+
+# Initial State
+initial_state = {
+    "A_on_table",
+    "B_on_table",
+    "C_on_table",
+    "clear_A",
+    "clear_B",
+    "clear_C",
+    "hand_empty"
+}
+
+# Goal State
+goal_state = {
+    "A_on_B",
+    "B_on_C",
+    "C_on_table"
+}
+
+# STRIPS Actions
+actions = {
+    "Move_A_to_B": {
+        "preconditions": {"A_on_table", "B_on_table",
+                          "clear_A", "clear_B", "hand_empty"},
+        "add": {"A_on_B", "clear_A"},
+        "delete": {"A_on_table", "B_on_table",
+                   "clear_B"}
+    },
+
+    "Move_B_to_C": {
+        "preconditions": {"B_on_table", "C_on_table",
+                          "clear_B", "clear_C", "hand_empty"},
+        "add": {"B_on_C", "clear_B"},
+        "delete": {"B_on_table", "C_on_table",
+                   "clear_C"}
+    }
+}
+
+# Check whether goal is achieved
+def goal_achieved(state, goal):
+    return goal.issubset(state)
+
+# Apply an action
+def apply_action(state, action):
+    new_state = state.copy()
+
+    new_state -= action["delete"]
+    new_state |= action["add"]
+
+    return new_state
+
+# Planning function
+def planner(initial, goal):
+    state = initial.copy()
+    plan = []
+
+    # First move A onto B
+    action1 = actions["Move_A_to_B"]
+
+    if action1["preconditions"].issubset(state):
+        state = apply_action(state, action1)
+        plan.append("Move A onto B")
+
+    # Then move B onto C
+    action2 = actions["Move_B_to_C"]
+
+    if action2["preconditions"].issubset(state):
+        state = apply_action(state, action2)
+        plan.append("Move B onto C")
+
+    return plan, state
+
+
+# Main Program
+print("================================")
+print("   BLOCKS WORLD PLANNING")
+print("================================")
+
+print("\nInitial State:")
+print(initial_state)
+
+print("\nGoal State:")
+print(goal_state)
+
+plan, final_state = planner(initial_state, goal_state)
+
+print("\nGenerated Plan:")
+
+for i, step in enumerate(plan, 1):
+    print("Step", i, ":", step)
+
+print("\nFinal State:")
+print(final_state)
+
+if goal_achieved(final_state, goal_state):
+    print("\nGoal Achieved Successfully!")
+else:
+    print("\nGoal Not Achieved!")
